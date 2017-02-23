@@ -12,21 +12,18 @@ type MetricWriter interface {
 }
 
 type GraphiteMetricWriter struct {
-	conn *net.TCPConn
+	conn net.Conn
 }
 
 func NewGraphiteMetricWriter(server string) (*GraphiteMetricWriter, error) {
-	addr, err := net.ResolveTCPAddr("tcp", server)
+
+	d := &net.Dialer{Timeout: 5 * time.Second}
+	c, err := d.Dial("tcp", server)
 	if err != nil {
 		return nil, err
 	}
 
-	conn, err := net.DialTCP("tcp", nil, addr)
-	if err != nil {
-		return nil, err
-	}
-
-	return &GraphiteMetricWriter{conn: conn}, nil
+	return &GraphiteMetricWriter{conn: c}, nil
 }
 
 func (m *GraphiteMetricWriter) Close() {
